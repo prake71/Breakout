@@ -64,6 +64,83 @@ ball.rect.x = (640 - 10) / 2
 ball.rect.y = paddle.rect.top - 20
 all_sprites.add(ball)
 
+# Score
+font = pygame.font.SysFont("PressStart2P.ttf", 40)
+text = font.render("000", False, GREY)
+
+"""
+BxH = 48x20
+165 Score 80   Paddles 96 Level
+ D 16 D 16 D
+Digits:
+       .byte $E7 ; |XXX  XXX| $F000
+       .byte $A5 ; |X X  X X| $F001
+       .byte $A5 ; |X X  X X| $F002
+       .byte $A5 ; |X X  X X| $F003
+       .byte $E7 ; |XXX  XXX| $F004
+
+       .byte $42 ; | X    X | $F005
+       .byte $42 ; | X    X | $F006
+       .byte $42 ; | X    X | $F007
+       .byte $42 ; | X    X | $F008
+       .byte $42 ; | X    X | $F009
+
+       .byte $E7 ; |XXX  XXX| $F00A
+       .byte $24 ; |  X  X  | $F00B
+       .byte $E7 ; |XXX  XXX| $F00C
+       .byte $81 ; |X      X| $F00D
+       .byte $E7 ; |XXX  XXX| $F00E
+
+       .byte $E7 ; |XXX  XXX| $F00F
+       .byte $81 ; |X      X| $F010
+       .byte $C3 ; |XX    XX| $F011
+       .byte $81 ; |X      X| $F012
+       .byte $E7 ; |XXX  XXX| $F013
+
+       .byte $81 ; |X      X| $F014
+       .byte $81 ; |X      X| $F015
+       .byte $E7 ; |XXX  XXX| $F016
+       .byte $A5 ; |X X  X X| $F017
+       .byte $A5 ; |X X  X X| $F018
+
+       .byte $E7 ; |XXX  XXX| $F019
+       .byte $81 ; |X      X| $F01A
+       .byte $E7 ; |XXX  XXX| $F01B
+       .byte $24 ; |  X  X  | $F01C
+       .byte $E7 ; |XXX  XXX| $F01D
+
+       .byte $E7 ; |XXX  XXX| $F01E
+       .byte $A5 ; |X X  X X| $F01F
+       .byte $E7 ; |XXX  XXX| $F020
+       .byte $24 ; |  X  X  | $F021
+       .byte $24 ; |  X  X  | $F022
+
+       .byte $81 ; |X      X| $F023
+       .byte $81 ; |X      X| $F024
+       .byte $81 ; |X      X| $F025
+       .byte $81 ; |X      X| $F026
+       .byte $E7 ; |XXX  XXX| $F027
+
+       .byte $E7 ; |XXX  XXX| $F028
+       .byte $A5 ; |X X  X X| $F029
+       .byte $E7 ; |XXX  XXX| $F02A
+       .byte $A5 ; |X X  X X| $F02B
+       .byte $E7 ; |XXX  XXX| $F02C
+
+       .byte $81 ; |X      X| $F02D
+       .byte $81 ; |X      X| $F02E
+       .byte $E7 ; |XXX  XXX| $F02F
+       .byte $A5 ; |X X  X X| $F030
+       .byte $E7 ; |XXX  XXX| $F031
+
+       .byte $00 ; |        | $F032
+       .byte $00 ; |        | $F033
+       .byte $00 ; |        | $F034
+       .byte $00 ; |        | $F035
+       .byte $00 ; |        | $F036
+
+"""
+
 # Set the initial ball speed
 ball_dx = 1.5
 ball_dy = 1.8
@@ -92,6 +169,10 @@ pygame.event.set_grab(True)
 
 clock = pygame.time.Clock()
 game_over = False
+score = 0
+lives = 5
+
+live_text = font.render("{}".format(lives), False, GREY)
 
 # L - Loop
 while not game_over:
@@ -107,14 +188,25 @@ while not game_over:
     mouse_x = pygame.mouse.get_pos()[0]
     #b1, b2, b3 = pygame.mouse.get_pressed()
     if pygame.mouse.get_pressed()[0]:
+        if lives > 0:
+            ball_in_play = True
+            ball.rect.x = paddle.rect.centerx
+            ball.rect.y = paddle.rect.top - 20
+            all_sprites.add(ball)
+    if pygame.mouse.get_pressed()[2] and lives == 0:
+        lives = 5
+        score = 0
+        ball.rect.x = paddle.rect.centerx
+        ball.rect.y = paddle.rect.top - 20
         ball_in_play = True
+        all_sprites.add(ball)
+
     mouse_pos_equal = True
     while mouse_pos_equal:
         mouse_pos_equal = mouse_x != paddle.rect.left
         print(mouse_pos_equal)
         if mouse_x <  paddle.rect.left:
             paddle.rect.x = paddle.rect.x - 1
-
         elif mouse_x > paddle.rect.left:
             if paddle.rect.right < 640 - 32:
                 paddle.rect.x = paddle.rect.x + 1
@@ -146,12 +238,19 @@ while not game_over:
         elif (ball.rect.y > paddle.rect.top + 10 / 2):
             ball_in_play = False
             all_sprites.remove(ball)
+            lives = lives - 1
         # Check if the ball bounced off a block
         blocks_hit_list = pygame.sprite.spritecollide(ball, blocks, True)
         if blocks_hit_list:
             ball_dy = -ball_dy
+            score = score + 1
+    #scorestr = "{:0>3}".format(score)
+    text = font.render("{:0>3}".format(score), False, GREY)
+    live_text = font.render("{}".format(lives), False, GREY)
     all_sprites.update()
     screen.fill(BLACK)
+    screen.blit(text, (144,36) )
+    screen.blit(live_text, (250, 36))
     # R - Refresh Display
     all_sprites.draw(screen)
     pygame.display.update()
