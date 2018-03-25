@@ -4,7 +4,7 @@
 # color constants
 # a website for finding out color names
 # https://www.w3schools.com/colors/colors_converter.asp
-GREY =  [105,105,105]
+GREY = [105,105,105]
 BLACK = [0,  0,  0]
 PINK = [168, 76, 96]
 BROWN = [133,107, 17]
@@ -24,7 +24,7 @@ pygame.init()
 screen = pygame.display.set_mode([640, 500])
 screen.fill(BLACK)
 
-# E - Entities
+# E - Entitiess
 
 # classes
 class Block(pygame.sprite.Sprite):
@@ -34,8 +34,11 @@ class Block(pygame.sprite.Sprite):
         self.image.fill(color)
         self.rect = self.image.get_rect()
 
+
+
 # A - Action
 # A - Assign Values to key variables
+blocks_container = pygame.sprite.Group()
 blocks = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 walls = pygame.sprite.Group()
@@ -65,85 +68,19 @@ ball.rect.y = paddle.rect.top - 20
 all_sprites.add(ball)
 
 # Score
-font = pygame.font.SysFont("PressStart2P.ttf", 40)
+font = pygame.font.Font("PressStart2P.ttf", 32)
 text = font.render("000", False, GREY)
 
 """
 BxH = 48x20
 165 Score 80   Paddles 96 Level
  D 16 D 16 D
-Digits:
-       .byte $E7 ; |XXX  XXX| $F000
-       .byte $A5 ; |X X  X X| $F001
-       .byte $A5 ; |X X  X X| $F002
-       .byte $A5 ; |X X  X X| $F003
-       .byte $E7 ; |XXX  XXX| $F004
-
-       .byte $42 ; | X    X | $F005
-       .byte $42 ; | X    X | $F006
-       .byte $42 ; | X    X | $F007
-       .byte $42 ; | X    X | $F008
-       .byte $42 ; | X    X | $F009
-
-       .byte $E7 ; |XXX  XXX| $F00A
-       .byte $24 ; |  X  X  | $F00B
-       .byte $E7 ; |XXX  XXX| $F00C
-       .byte $81 ; |X      X| $F00D
-       .byte $E7 ; |XXX  XXX| $F00E
-
-       .byte $E7 ; |XXX  XXX| $F00F
-       .byte $81 ; |X      X| $F010
-       .byte $C3 ; |XX    XX| $F011
-       .byte $81 ; |X      X| $F012
-       .byte $E7 ; |XXX  XXX| $F013
-
-       .byte $81 ; |X      X| $F014
-       .byte $81 ; |X      X| $F015
-       .byte $E7 ; |XXX  XXX| $F016
-       .byte $A5 ; |X X  X X| $F017
-       .byte $A5 ; |X X  X X| $F018
-
-       .byte $E7 ; |XXX  XXX| $F019
-       .byte $81 ; |X      X| $F01A
-       .byte $E7 ; |XXX  XXX| $F01B
-       .byte $24 ; |  X  X  | $F01C
-       .byte $E7 ; |XXX  XXX| $F01D
-
-       .byte $E7 ; |XXX  XXX| $F01E
-       .byte $A5 ; |X X  X X| $F01F
-       .byte $E7 ; |XXX  XXX| $F020
-       .byte $24 ; |  X  X  | $F021
-       .byte $24 ; |  X  X  | $F022
-
-       .byte $81 ; |X      X| $F023
-       .byte $81 ; |X      X| $F024
-       .byte $81 ; |X      X| $F025
-       .byte $81 ; |X      X| $F026
-       .byte $E7 ; |XXX  XXX| $F027
-
-       .byte $E7 ; |XXX  XXX| $F028
-       .byte $A5 ; |X X  X X| $F029
-       .byte $E7 ; |XXX  XXX| $F02A
-       .byte $A5 ; |X X  X X| $F02B
-       .byte $E7 ; |XXX  XXX| $F02C
-
-       .byte $81 ; |X      X| $F02D
-       .byte $81 ; |X      X| $F02E
-       .byte $E7 ; |XXX  XXX| $F02F
-       .byte $A5 ; |X X  X X| $F030
-       .byte $E7 ; |XXX  XXX| $F031
-
-       .byte $00 ; |        | $F032
-       .byte $00 ; |        | $F033
-       .byte $00 ; |        | $F034
-       .byte $00 ; |        | $F035
-       .byte $00 ; |        | $F036
 
 """
 
 # Set the initial ball speed
-ball_dx = 1.5
-ball_dy = 1.8
+ball_dx = 2
+ball_dy = 2
 
 # A couple of 'flags' (Boolean values)
 ball_in_play = False
@@ -151,7 +88,20 @@ just_bounced = False
 
 # 1 block = 32 pixel x 16 pixel
 color_list = [GREEN, LIGHTGREEN, PINK, DARKGREEN, BROWN, BLUE]
+
+def setup_blocks():
+    # Create a horizontal row of blocks for each color
+    for block_row, block_color in enumerate(color_list):
+        for block_column in range(1, 19):
+            # Create a block, leaving 1 pixels around the four edges
+            block = Block(block_color, 32, 16)
+            block.rect.x = block_column * 32 + 1
+            block.rect.y = 145 + block_row * 16
+            blocks.add(block)
+            all_sprites.add(block)
 # Create a horizontal row of blocks for each color
+setup_blocks()
+"""
 for block_row, block_color in enumerate(color_list):
     for block_column in range(1,19):
         # Create a block, leaving 1 pixels around the four edges
@@ -160,10 +110,7 @@ for block_row, block_color in enumerate(color_list):
         block.rect.y = 145 + block_row * 16
         blocks.add(block)
         all_sprites.add(block)
-
-
-
-
+"""
 pygame.mouse.set_visible(False)
 pygame.event.set_grab(True)
 
@@ -173,7 +120,9 @@ score = 0
 lives = 5
 
 live_text = font.render("{}".format(lives), False, GREY)
-
+mouse_x_old = paddle.rect.x
+assert isinstance(paddle.rect.x, object)
+mouse_x = paddle.rect.x
 # L - Loop
 while not game_over:
     # T - Timer
@@ -185,7 +134,6 @@ while not game_over:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 game_over = True
-    mouse_x = pygame.mouse.get_pos()[0]
     #b1, b2, b3 = pygame.mouse.get_pressed()
     if pygame.mouse.get_pressed()[0]:
         if lives > 0:
@@ -196,22 +144,30 @@ while not game_over:
     if pygame.mouse.get_pressed()[2] and lives == 0:
         lives = 5
         score = 0
+        setup_blocks()
         ball.rect.x = paddle.rect.centerx
         ball.rect.y = paddle.rect.top - 20
         ball_in_play = True
         all_sprites.add(ball)
 
+    print("Mouse Speed per frame:" , abs(mouse_x_old - mouse_x) )
+    mouse_x_old = mouse_x
+    mouse_x = pygame.mouse.get_pos()[0]
     mouse_pos_equal = True
     while mouse_pos_equal:
         mouse_pos_equal = mouse_x != paddle.rect.left
         print(mouse_pos_equal)
         if mouse_x <  paddle.rect.left:
-            paddle.rect.x = paddle.rect.x - 1
+            if paddle.rect.left > 32:
+                paddle.rect.x = paddle.rect.x - 1
+            else:
+                mouse_pos_equal = False
         elif mouse_x > paddle.rect.left:
             if paddle.rect.right < 640 - 32:
                 paddle.rect.x = paddle.rect.x + 1
             else:
                 mouse_pos_equal = False
+
     if ball_in_play:
         # Move the ball
         ball.rect.x += ball_dx
@@ -243,14 +199,17 @@ while not game_over:
         blocks_hit_list = pygame.sprite.spritecollide(ball, blocks, True)
         if blocks_hit_list:
             ball_dy = -ball_dy
-            score = score + 1
+            for block in blocks_hit_list:
+                score = score + 1
+            blocks_container.add(blocks_hit_list)
+
     #scorestr = "{:0>3}".format(score)
     text = font.render("{:0>3}".format(score), False, GREY)
     live_text = font.render("{}".format(lives), False, GREY)
     all_sprites.update()
     screen.fill(BLACK)
-    screen.blit(text, (144,36) )
-    screen.blit(live_text, (250, 36))
+    screen.blit(text, (165,32) )
+    screen.blit(live_text, (165 + text.get_width() + 80, 32))
     # R - Refresh Display
     all_sprites.draw(screen)
     pygame.display.update()
